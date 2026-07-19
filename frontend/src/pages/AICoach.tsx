@@ -70,6 +70,9 @@ type DirectionStat = { direction: string; wins: number; losses: number; decided:
 type Streak = { type: "win" | "loss"; count: number } | null;
 type Pattern = { title: string; description: string; severity: "positive" | "warning"; occurrences: number };
 type Recommendation = { title: string; detail: string };
+// Explicit alias for findOvertradingDay's result — see the note on that
+// function below for why this annotation matters for the build.
+type OvertradingDay = { day: string; total: number; winRate: number } | null;
 
 // Compact, JSON-serializable summary of everything computeInsights() already
 // derived, sent to POST /api/ai/analyze so Gemini can interpret it. No raw
@@ -255,7 +258,19 @@ function getCurrentStreak(closed: ClosedTrade[]): Streak {
 // Weekday clustering: frequency is activity-based (all trades that day),
 // but the win rate used to judge whether that day is "weaker" only counts
 // decided trades — consistent with the app-wide Win Rate definition.
-function findOvertradingDay(trades: ApiTrade[], overallWinRatePct: number | null) {
+//
+// NOTE: the explicit `: OvertradingDay` return-type annotation below is the
+// fix for the build failure ("Property 'day' does not exist on type
+// 'never'"). Without it, TypeScript infers this function's return type from
+// its return statements, including `return flagged;` at the end — but since
+// `flagged` is only ever reassigned inside the `byDay.forEach(...)` callback,
+// TypeScript can't see that mutation from the outer function scope and
+// treats `flagged` as still being its pre-loop type (`null`) at the point of
+// the final `return`. That made the whole function's inferred return type
+// collapse to `null`, so every caller's `if (overtradingDay) { ... }` block
+// narrowed to `never`. Declaring the return type explicitly sidesteps the
+// inference bug entirely — the runtime logic below is completely unchanged.
+function findOvertradingDay(trades: ApiTrade[], overallWinRatePct: number | null): OvertradingDay {
   if (overallWinRatePct === null) return null;
   if (trades.length < WEEKDAY_MIN_TOTAL) return null;
 

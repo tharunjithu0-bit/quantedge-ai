@@ -205,7 +205,15 @@ export default function Analytics() {
       setupWinStats.set(key, entry);
     });
     let bestSetup: { name: string; winRate: number; total: number } | null = null;
-    setupWinStats.forEach((v, name) => {
+    // NOTE: this was previously `setupWinStats.forEach((v, name) => { ... bestSetup = ... })`.
+    // TypeScript cannot track reassignment of an outer `let` from inside a callback
+    // passed to Map.forEach, so after the loop it still treats `bestSetup` as its
+    // pre-loop type (`null`), which made every later `bestSetup.xxx` access resolve
+    // to `never` and fail the build ("Property 'name' does not exist on type 'never'").
+    // A plain `for...of` loop has the same runtime behavior (same iteration order,
+    // same values, same mutation) but lets TypeScript correctly widen `bestSetup`
+    // back to `{ name; winRate; total } | null` once the loop exits.
+    for (const [name, v] of setupWinStats) {
       const winRate = Math.round((v.wins / v.total) * 100);
       if (
         !bestSetup ||
@@ -214,7 +222,7 @@ export default function Analytics() {
       ) {
         bestSetup = { name, winRate, total: v.total };
       }
-    });
+    }
 
     // Best-performing asset by total net P&L — uses stored pnl, closed trades only
     const assetPnl = new Map<string, number>();
@@ -222,9 +230,11 @@ export default function Analytics() {
       assetPnl.set(t.asset, (assetPnl.get(t.asset) || 0) + t.pnl);
     });
     let bestAsset: { name: string; pnl: number } | null = null;
-    assetPnl.forEach((pnl, name) => {
+    // Same fix as bestSetup above: for...of instead of Map.forEach so TypeScript
+    // keeps `bestAsset`'s real type after the loop instead of narrowing it to `never`.
+    for (const [name, pnl] of assetPnl) {
       if (!bestAsset || pnl > bestAsset.pnl) bestAsset = { name, pnl };
-    });
+    }
 
     // ── Data-driven recommendations ──
     const recommendations: Recommendation[] = [];
