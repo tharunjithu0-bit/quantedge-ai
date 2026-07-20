@@ -36,7 +36,7 @@ type TradesResponse =
 type ClosedTrade = ApiTrade & { pnl: number };
 
 // Adjust to wherever the Flask API is actually served from.
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://quantedge-ai-1bbs.onrender.com";
 const TRADES_ENDPOINT = `${API_BASE_URL}/api/trades`;
 const ANALYZE_ENDPOINT = `${API_BASE_URL}/api/ai/analyze`;
 
