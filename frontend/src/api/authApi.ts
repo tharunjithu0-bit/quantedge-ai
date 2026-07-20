@@ -3,7 +3,7 @@ import axios from "axios";
 // Same base URL constant used by Dashboard.tsx, TradeJournal.tsx, etc.
 // Kept local to this file (not extracted into a shared config) so the
 // existing pages' axios calls are left completely untouched.
-const API_BASE_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = "https://quantedge-ai-1bbs.onrender.com";
 
 export type AuthUser = {
   id: number;

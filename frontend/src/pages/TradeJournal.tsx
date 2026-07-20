@@ -23,7 +23,7 @@ type ImportError = { row: number; reason: string };
 type ImportSummary = { imported: number; failed: number; errors: ImportError[] };
 type DeleteAllMessage = { type: "success" | "error"; text: string };
 
-const API_BASE_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = "https://quantedge-ai-1bbs.onrender.com";
 
 const capitalize = (value: string) =>
   value ? value.charAt(0).toUpperCase() + value.slice(1) : "";
