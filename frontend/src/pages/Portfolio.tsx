@@ -21,6 +21,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { useAuth } from "../context/AuthContext";
 
 // ---------- Trade data ----------
 // Matches models/trade.py Trade.to_dict() exactly, as returned by
@@ -88,6 +89,7 @@ const cardClass = `
 type FetchStatus = "loading" | "error" | "success";
 
 function Portfolio() {
+  const { token } = useAuth();
   const [trades, setTrades] = useState<ApiTrade[]>([]);
   const [status, setStatus] = useState<FetchStatus>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -98,7 +100,10 @@ function Portfolio() {
     try {
       const res = await fetch(TRADES_ENDPOINT, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const body: TradesResponse = await res.json();
@@ -115,11 +120,12 @@ function Portfolio() {
       setErrorMessage(err instanceof Error ? err.message : "Failed to load trades.");
       setStatus("error");
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
+    if (!token) return;
     loadTrades();
-  }, [loadTrades]);
+  }, [token, loadTrades]);
 
   const stats = useMemo(() => {
     const total = trades.length;

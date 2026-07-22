@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, CartesianGrid,
 } from "recharts";
 import { TrendingUp, BarChart2, Percent, ChevronsUpDown, Lightbulb, AlertTriangle, RefreshCw } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 // ── Trade data ──────────────────────────────────────────────────────────────
 // Matches models/trade.py Trade.to_dict() exactly, as returned by
@@ -98,6 +99,7 @@ function ChartTooltip({ active, payload, label }: {
 type FetchStatus = "loading" | "error" | "success";
 
 export default function Analytics() {
+  const { token } = useAuth();
   const [trades, setTrades] = useState<ApiTrade[]>([]);
   const [status, setStatus] = useState<FetchStatus>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -108,7 +110,10 @@ export default function Analytics() {
     try {
       const res = await fetch(TRADES_ENDPOINT, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const body: TradesResponse = await res.json();
@@ -127,11 +132,12 @@ export default function Analytics() {
       );
       setStatus("error");
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
+    if (!token) return;
     loadTrades();
-  }, [loadTrades]);
+  }, [token, loadTrades]);
 
   const stats = useMemo(() => {
     const total = trades.length;

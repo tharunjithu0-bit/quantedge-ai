@@ -4,6 +4,7 @@ import {
   Bot, TrendingUp, AlertTriangle, Lightbulb, Award, Activity, RefreshCw,
   ListChecks, Sparkles,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 // ── Trade data ──────────────────────────────────────────────────────────────
 // Matches models/trade.py Trade.to_dict() exactly, as returned by
@@ -548,6 +549,8 @@ type FetchStatus = "loading" | "error" | "success";
 type GeminiFetchStatus = "idle" | "loading" | "error" | "success";
 
 function AICoach() {
+  const { token } = useAuth();
+
   const [trades, setTrades] = useState<ApiTrade[]>([]);
   const [status, setStatus] = useState<FetchStatus>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -565,7 +568,10 @@ function AICoach() {
     try {
       const res = await fetch(TRADES_ENDPOINT, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const body: TradesResponse = await res.json();
@@ -582,11 +588,12 @@ function AICoach() {
       setErrorMessage(err instanceof Error ? err.message : "Failed to load trades.");
       setStatus("error");
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
+    if (!token) return;
     loadTrades();
-  }, [loadTrades]);
+  }, [token, loadTrades]);
 
   const { weeklyReview, patterns, recommendations, geminiInput } = useMemo(() => computeInsights(trades), [trades]);
 
@@ -596,7 +603,10 @@ function AICoach() {
     try {
       const res = await fetch(ANALYZE_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ insights }),
       });
 
@@ -614,7 +624,7 @@ function AICoach() {
       setGeminiErrorMessage(err instanceof Error ? err.message : "Failed to generate the Gemini analysis.");
       setGeminiStatus("error");
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (status === "success" && geminiInput && geminiStatus === "idle") {
