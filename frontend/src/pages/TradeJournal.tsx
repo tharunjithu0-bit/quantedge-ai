@@ -216,9 +216,19 @@ export default function TradeJournal() {
     formData.append("file", file);
 
     try {
+      // IMPORTANT: do NOT set "Content-Type" manually here. When the
+      // body is a FormData instance, axios (via the browser) needs to
+      // generate its own "multipart/form-data; boundary=----..." header,
+      // because every multipart request needs a unique boundary string
+      // that matches what's actually written into the body. Setting
+      // "Content-Type": "multipart/form-data" by hand overrides that
+      // and ships a header with NO boundary, which the backend can't
+      // parse — Flask's request.files comes back empty and the route
+      // returns 400 "No file provided" every time. Only the auth
+      // header needs to be set explicitly; the content type is left
+      // for axios/the browser to fill in.
       const response = await axios.post(`${API_BASE_URL}/api/trades/import`, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });

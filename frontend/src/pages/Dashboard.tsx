@@ -52,9 +52,17 @@ const mapApiTradeToTrade = (item: any): Trade => ({
   notes: item.notes ?? "",
 });
 
-async function loadTradesFromApi(): Promise<Trade[]> {
+// NOTE: now requires the JWT and sends it as a Bearer token, same as
+// TradeJournal.tsx's fetchTrades(). This was previously called with no
+// Authorization header at all, which is what caused the intermittent
+// 200/401 pattern in the backend logs — this code path and
+// TradeJournal's fetchTrades() were two different requests to the same
+// endpoint, and only one of them was authenticated.
+async function loadTradesFromApi(token: string): Promise<Trade[]> {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/trades`);
+    const response = await axios.get(`${API_BASE_URL}/api/trades`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     const apiTrades = Array.isArray(response.data?.data) ? response.data.data : [];
     return apiTrades.map(mapApiTradeToTrade);
   } catch (err) {
@@ -216,20 +224,25 @@ function KpiCard({
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [trades, setTrades] = useState<Trade[]>([]);
 
   useEffect(() => {
+    // Don't fire the request until we actually have a token (e.g. still
+    // restoring the session on refresh). Previously this ran
+    // unconditionally with no auth at all.
+    if (!token) return;
+
     let cancelled = false;
 
-    loadTradesFromApi().then((apiTrades) => {
+    loadTradesFromApi(token).then((apiTrades) => {
       if (!cancelled) setTrades(apiTrades);
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [token]);
 
   const stats = useMemo(() => {
     const total = trades.length;
