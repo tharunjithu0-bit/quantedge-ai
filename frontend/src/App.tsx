@@ -6,8 +6,9 @@ import {
   BarChart3,
   Bot,
   LogOut,
+  Menu,
 } from "lucide-react";
-
+import { useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import TradeJournal from "./pages/TradeJournal";
 import Portfolio from "./pages/Portfolio";
@@ -18,18 +19,15 @@ import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 
-// Everything that used to be the entire App component — background,
-// sidebar, and the five dashboard routes — now lives here, completely
-// unchanged in markup/styling. It's only reachable once ProtectedRoute
-// confirms the user is authenticated (see App() below).
 function DashboardLayout() {
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <div className="relative min-h-screen text-white overflow-hidden">
-
       {/* Background Gradient */}
-
       <div
         className="
         absolute inset-0
@@ -42,7 +40,6 @@ function DashboardLayout() {
       />
 
       {/* Radial Glow */}
-
       <div
         className="
         absolute inset-0
@@ -52,63 +49,57 @@ function DashboardLayout() {
       />
 
       <div className="flex min-h-screen">
-
         {/* Sidebar */}
-
         <div
-          className="
-          w-72
-          bg-slate-900/70
-          backdrop-blur-xl
-          border-r
-          border-slate-800
-          p-6
-        "
+          className={`
+            fixed md:static inset-y-0 left-0 z-50
+            w-72
+            bg-slate-900/70
+            backdrop-blur-xl
+            border-r
+            border-slate-800
+            p-6
+            transition-transform duration-300 ease-in-out
+            ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          `}
         >
           {/* Logo */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3">
+              <div
+                className="
+                w-10 h-10
+                rounded-xl
+                bg-gradient-to-br
+                from-cyan-400
+                to-blue-600
+                shadow-lg
+                shadow-cyan-500/30
+                flex
+                items-center
+                justify-center
+                font-bold
+                text-lg
+              "
+              >
+                ▣
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-wide">
+                  QuantEdge AI
+                </h1>
+                <p className="text-slate-400 text-xs">
+                  Trading Intelligence Platform
+                </p>
+              </div>
+            </div>
+          </div>
 
-<div className="mb-10">
-
-  <div className="flex items-center gap-3">
-
-    <div
-      className="
-      w-10 h-10
-      rounded-xl
-      bg-gradient-to-br
-      from-cyan-400
-      to-blue-600
-      shadow-lg
-      shadow-cyan-500/30
-      flex
-      items-center
-      justify-center
-      font-bold
-      text-lg
-    "
-    >
-      ▣
-    </div>
-
-    <div>
-      <h1 className="text-2xl font-bold tracking-wide">
-        QuantEdge AI
-      </h1>
-
-      <p className="text-slate-400 text-xs">
-        Trading Intelligence Platform
-      </p>
-    </div>
-
-  </div>
-
-</div>
           {/* Navigation */}
-
           <div className="space-y-2">
-
             <Link
               to="/"
+              onClick={closeMenu}
               className="
               flex items-center gap-3
               p-3 rounded-xl
@@ -124,6 +115,7 @@ function DashboardLayout() {
 
             <Link
               to="/trade-journal"
+              onClick={closeMenu}
               className="
               flex items-center gap-3
               p-3 rounded-xl
@@ -139,6 +131,7 @@ function DashboardLayout() {
 
             <Link
               to="/portfolio"
+              onClick={closeMenu}
               className="
               flex items-center gap-3
               p-3 rounded-xl
@@ -154,6 +147,7 @@ function DashboardLayout() {
 
             <Link
               to="/analytics"
+              onClick={closeMenu}
               className="
               flex items-center gap-3
               p-3 rounded-xl
@@ -169,6 +163,7 @@ function DashboardLayout() {
 
             <Link
               to="/ai-coach"
+              onClick={closeMenu}
               className="
               flex items-center gap-3
               p-3 rounded-xl
@@ -181,11 +176,9 @@ function DashboardLayout() {
               <Bot size={20} />
               AI Coach
             </Link>
-
           </div>
 
           {/* User Card */}
-
           <div
             className="
             mt-12
@@ -208,7 +201,10 @@ function DashboardLayout() {
             </p>
 
             <button
-              onClick={logout}
+              onClick={() => {
+                logout();
+                closeMenu();
+              }}
               className="
               mt-3
               w-full
@@ -228,57 +224,64 @@ function DashboardLayout() {
               Logout
             </button>
           </div>
-
         </div>
+
+        {/* Mobile Overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            onClick={closeMenu}
+          />
+        )}
 
         {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Mobile Header */}
+          <div className="md:hidden bg-slate-900/70 backdrop-blur-xl border-b border-slate-800 p-4 flex items-center justify-between z-30">
+            <div className="flex items-center gap-3">
+              <div
+                className="
+                w-8 h-8
+                rounded-xl
+                bg-gradient-to-br
+                from-cyan-400
+                to-blue-600
+                flex
+                items-center
+                justify-center
+                font-bold
+                text-lg
+              "
+              >
+                ▣
+              </div>
+              <h1 className="text-xl font-bold tracking-wide">QuantEdge AI</h1>
+            </div>
 
-        <div className="flex-1 p-10 overflow-auto">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <Menu size={28} />
+            </button>
+          </div>
 
-          <Routes>
-
-            <Route
-              path="/"
-              element={<Dashboard />}
-            />
-
-            <Route
-              path="/trade-journal"
-              element={<TradeJournal />}
-            />
-
-            <Route
-              path="/portfolio"
-              element={<Portfolio />}
-            />
-
-            <Route
-              path="/analytics"
-              element={<Analytics />}
-            />
-
-            <Route
-              path="/ai-coach"
-              element={<AICoach />}
-            />
-
-          </Routes>
-
+          {/* Page Content */}
+          <div className="flex-1 p-4 md:p-10 overflow-auto">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/trade-journal" element={<TradeJournal />} />
+              <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/ai-coach" element={<AICoach />} />
+            </Routes>
+          </div>
         </div>
-
       </div>
-
     </div>
   );
 }
 
-// Top-level routing: /login and /register are public and render without
-// the sidebar. Every other path renders the untouched DashboardLayout
-// (sidebar + Dashboard/TradeJournal/Portfolio/Analytics/AICoach), but only
-// after ProtectedRoute confirms there's a logged-in user — otherwise it
-// redirects to /login. This is the only structural change: the original
-// App() body above is preserved exactly, just renamed to DashboardLayout
-// and reached through a guard instead of being the root component.
 function App() {
   return (
     <Routes>

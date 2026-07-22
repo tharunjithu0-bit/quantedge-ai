@@ -188,7 +188,7 @@ function KpiCard({
         bg-slate-900/70 backdrop-blur-xl
         rounded-2xl border border-slate-800
         hover:border-slate-700
-        p-6
+        p-4 md:p-6
         shadow-[0_0_50px_-18px_rgba(34,211,238,0.35)]
         hover:shadow-[0_0_60px_-12px_rgba(34,211,238,0.5)]
         transition-all duration-300
@@ -376,23 +376,23 @@ export default function Dashboard() {
     >
 
       {/* ── Header ── */}
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">
             {headerDate}
           </p>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
             {greeting}, {displayName} 
           </h1>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700 text-xs text-slate-400">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700 text-xs text-slate-400 whitespace-nowrap">
           Last 30 days
           <span className="text-slate-600">▾</span>
         </div>
       </div>
 
       {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           label="Net P&L"
           value={hasTrades ? `${netPnl >= 0 ? "+" : "-"}${fmt(Math.abs(netPnl))}` : "—"}
@@ -442,18 +442,18 @@ export default function Dashboard() {
           bg-slate-900/70 backdrop-blur-xl
           rounded-2xl border border-slate-800
           hover:border-slate-700
-          p-6
+          p-4 md:p-6
           transition-all duration-300
         "
       >
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
           <div>
             <h2 className="text-sm font-semibold text-white">Equity Curve</h2>
             <p className="text-xs text-slate-500 mt-0.5">{dateRangeLabel}</p>
           </div>
           {hasTrades && (
             <div
-              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border ${
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border self-start sm:self-auto ${
                 percentChange >= 0
                   ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20"
                   : "text-rose-400 bg-rose-400/10 border-rose-400/20"
@@ -466,7 +466,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={260}>
           <AreaChart data={equityData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
@@ -503,7 +503,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ── Bottom: AI Insight + Recent Trades ── */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 340px" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
 
         {/* AI Insight — signature element: animated gradient border */}
         <motion.div
@@ -579,7 +579,7 @@ export default function Dashboard() {
             bg-slate-900/70 backdrop-blur-xl
             rounded-2xl border border-slate-800
             hover:border-slate-700
-            p-6
+            p-4 md:p-6
             transition-all duration-300
           "
         >
@@ -623,7 +623,7 @@ export default function Dashboard() {
                     {/* Asset + setup */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-white">{t.asset}</p>
+                        <p className="text-sm font-semibold text-white truncate">{t.asset}</p>
                         <span
                           className={`
                             text-[9px] font-bold uppercase px-1.5 py-0.5 rounded
@@ -635,7 +635,7 @@ export default function Dashboard() {
                           {t.dir}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                         {t.setup} · {t.date}
                       </p>
                     </div>

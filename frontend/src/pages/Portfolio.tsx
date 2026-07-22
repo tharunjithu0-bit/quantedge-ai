@@ -76,7 +76,7 @@ const formatCurrency = (n: number) =>
   });
 
 const cardClass = `
-  p-6 rounded-2xl
+  p-4 md:p-6 rounded-2xl
   bg-slate-800/50
   backdrop-blur-xl
   border border-slate-800
@@ -231,7 +231,7 @@ function Portfolio() {
   const isPnLPositive = netPnl >= 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-wide">Portfolio</h1>
@@ -267,7 +267,7 @@ function Portfolio() {
       )}
 
       {/* Top Cards: Net P&L, Best Asset, Worst Asset, Total Assets Traded */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -394,7 +394,7 @@ function Portfolio() {
             {isLoading ? "Loading…" : hasClosedTrades ? "Cumulative balance over time" : "No closed trades yet"}
           </p>
 
-          <div className="h-72">
+          <div className="h-64 md:h-72">
             {isLoading ? (
               <div className="w-full h-full rounded-xl bg-slate-700/30 animate-pulse" />
             ) : (
@@ -563,7 +563,7 @@ function Portfolio() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[620px]">
               <thead>
                 <tr className="text-left text-slate-500 border-b border-slate-800">
                   <th className="pb-3 font-medium">Asset</th>

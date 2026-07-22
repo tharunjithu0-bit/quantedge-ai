@@ -293,15 +293,15 @@ export default function TradeJournal() {
       transition={{ duration: 0.4 }}
     >
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-5xl font-bold">Trade Journal</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold">Trade Journal</h1>
           <p className="text-slate-400 mt-1.5">
             Track, review and improve your trading performance.
           </p>
         </div>
 
-        <div className="shrink-0 flex items-center gap-3">
+        <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -313,7 +313,7 @@ export default function TradeJournal() {
             onClick={handleImportClick}
             disabled={isImporting || isDeletingAll}
             className="
-              flex items-center gap-2
+              flex items-center justify-center gap-2
               px-4 py-2.5
               rounded-xl
               font-semibold
@@ -323,6 +323,7 @@ export default function TradeJournal() {
               disabled:opacity-60
               disabled:cursor-not-allowed
               transition-colors
+              w-full sm:w-auto
             "
           >
             <Upload size={16} />
@@ -333,7 +334,7 @@ export default function TradeJournal() {
             onClick={handleDeleteAllTrades}
             disabled={isImporting || isDeletingAll || trades.length === 0}
             className="
-              flex items-center gap-2
+              flex items-center justify-center gap-2
               px-4 py-2.5
               rounded-xl
               font-semibold
@@ -345,6 +346,7 @@ export default function TradeJournal() {
               disabled:opacity-60
               disabled:cursor-not-allowed
               transition-colors
+              w-full sm:w-auto
             "
           >
             <Trash2 size={16} />
@@ -393,13 +395,12 @@ export default function TradeJournal() {
       )}
 
       {/* Main Layout */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        {/* Left Form — Change 3: whileHover with y + scale */}
+        {/* Left Form */}
         <motion.div
           whileHover={{ y: -4, scale: 1.01 }}
           className="
-            col-span-1
             bg-slate-900/80
             backdrop-blur-xl
             p-5
@@ -441,7 +442,7 @@ export default function TradeJournal() {
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block mb-2 text-slate-300">Entry</label>
                 <input
@@ -462,7 +463,7 @@ export default function TradeJournal() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block mb-2 text-slate-300">Stop Loss</label>
                 <input
@@ -532,7 +533,7 @@ export default function TradeJournal() {
               />
             </div>
 
-            {/* Change 1: Upgraded Save Trade Button */}
+            {/* Save Trade Button */}
             <button
               onClick={handleSaveTrade}
               className="
@@ -557,23 +558,14 @@ export default function TradeJournal() {
           </div>
         </motion.div>
 
-        {/* Right Trades Panel — Change 2: h-[575px], Change 3: whileHover with y + scale */}
+        {/* Right Trades Panel */}
         <motion.div
           whileHover={{ y: -4, scale: 1.01 }}
-          className="
-            col-span-2
-            bg-slate-900/80
-            backdrop-blur-xl
-            p-5
-            rounded-3xl
-            border-2 border-slate-800
-            h-[780px]
-            flex flex-col
-          "
+          className="lg:col-span-2 bg-slate-900/80 backdrop-blur-xl p-5 rounded-3xl border-2 border-slate-800 flex flex-col min-h-[600px] lg:h-[780px]"
         >
           <h2 className="text-2xl font-bold mb-5 shrink-0">Recent Trades</h2>
 
-          {/* Change 5: Small Stats above trades */}
+          {/* Small Stats */}
           <div className="grid grid-cols-2 gap-4 mb-5 shrink-0">
             <div className="bg-slate-800/60 p-4 rounded-xl">
               <p className="text-slate-400 text-sm">Trades</p>
@@ -588,7 +580,7 @@ export default function TradeJournal() {
           </div>
 
           {trades.length === 0 ? (
-            // Change 4: Updated empty state
+            // Empty state
             <div className="text-center py-16">
               <p className="text-3xl mb-3">📈</p>
               <p className="text-slate-300 text-lg font-semibold">No trades yet</p>
@@ -597,94 +589,96 @@ export default function TradeJournal() {
               </p>
             </div>
           ) : (
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-xl">
-                  <tr className="border-b border-slate-800">
-                    <th className="p-4 text-left">Asset</th>
-                    <th className="p-4 text-left">Direction</th>
-                    <th className="p-4 text-left">Setup</th>
-                    <th className="p-4 text-left">Result</th>
-                    <th className="p-4 text-right">P&amp;L</th>
-                    <th className="p-4 text-left">Date</th>
-                    <th className="p-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trades.map((trade, index) => {
-                    const pnl = trade.pnl ?? 0;
-                    const positive = pnl >= 0;
-                    return (
-                      <tr
-                        key={index}
-                        className="
-                          border-b border-slate-800
-                          hover:bg-slate-800/40
-                          transition-all
-                        "
-                      >
-                        <td className="p-4">{trade.asset}</td>
-                        <td className="p-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              trade.direction === "Buy"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-red-500/20 text-red-400"
-                            }`}
-                          >
-                            {trade.direction}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400">
-                            {trade.setupType}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              trade.result === "Win"
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-red-500/20 text-red-400"
-                            }`}
-                          >
-                            {trade.result}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <span
-                            className={`font-semibold ${
-                              positive ? "text-green-400" : "text-red-400"
-                            }`}
-                          >
-                            {positive ? "+" : ""}
-                            {pnl.toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="p-4">{trade.tradeDate}</td>
-                        <td className="p-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEditTrade(index)}
-                              className="p-2 rounded-lg hover:bg-slate-700/60 text-slate-400 hover:text-cyan-400 transition-colors"
-                              aria-label="Edit trade"
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <div className="overflow-x-auto h-full">
+                <table className="w-full border-collapse min-w-[700px]">
+                  <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-xl">
+                    <tr className="border-b border-slate-800">
+                      <th className="p-4 text-left">Asset</th>
+                      <th className="p-4 text-left">Direction</th>
+                      <th className="p-4 text-left">Setup</th>
+                      <th className="p-4 text-left">Result</th>
+                      <th className="p-4 text-right">P&amp;L</th>
+                      <th className="p-4 text-left">Date</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trades.map((trade, index) => {
+                      const pnl = trade.pnl ?? 0;
+                      const positive = pnl >= 0;
+                      return (
+                        <tr
+                          key={index}
+                          className="
+                            border-b border-slate-800
+                            hover:bg-slate-800/40
+                            transition-all
+                          "
+                        >
+                          <td className="p-4">{trade.asset}</td>
+                          <td className="p-4">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                trade.direction === "Buy"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
                             >
-                              <Pencil size={15} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTrade(index)}
-                              className="p-2 rounded-lg hover:bg-slate-700/60 text-slate-400 hover:text-red-400 transition-colors"
-                              aria-label="Delete trade"
+                              {trade.direction}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400">
+                              {trade.setupType}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                trade.result === "Win"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
                             >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              {trade.result}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            <span
+                              className={`font-semibold ${
+                                positive ? "text-green-400" : "text-red-400"
+                              }`}
+                            >
+                              {positive ? "+" : ""}
+                              {pnl.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="p-4">{trade.tradeDate}</td>
+                          <td className="p-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleEditTrade(index)}
+                                className="p-2 rounded-lg hover:bg-slate-700/60 text-slate-400 hover:text-cyan-400 transition-colors"
+                                aria-label="Edit trade"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTrade(index)}
+                                className="p-2 rounded-lg hover:bg-slate-700/60 text-slate-400 hover:text-red-400 transition-colors"
+                                aria-label="Delete trade"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </motion.div>

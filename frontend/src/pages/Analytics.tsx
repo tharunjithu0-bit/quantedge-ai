@@ -71,7 +71,7 @@ type Recommendation = {
 const card = `
   bg-slate-900
   rounded-2xl border border-slate-800/40
-  p-6 transition-colors duration-200
+  p-4 md:p-6 transition-colors duration-200
 `;
 
 function IconBadge({ icon: Icon }: { icon: React.ElementType }) {
@@ -392,7 +392,7 @@ export default function Analytics() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((k, i) => (
           <motion.div
             key={k.label}
@@ -416,7 +416,7 @@ export default function Analytics() {
       </div>
 
       {/* Equity Curve + Win/Loss */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: "1.86fr 1fr" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1.86fr_1fr] gap-4">
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -428,14 +428,14 @@ export default function Analytics() {
           <p className="text-xs text-slate-500 mb-5">Balance per trade</p>
 
           {isLoading ? (
-            <div className="h-[260px] rounded-xl bg-slate-800/50 animate-pulse" />
+            <div className="h-[240px] md:h-[260px] rounded-xl bg-slate-800/50 animate-pulse" />
           ) : !hasTrades ? (
-            <div className="h-[260px] flex flex-col items-center justify-center text-center">
+            <div className="h-[240px] md:h-[260px] flex flex-col items-center justify-center text-center">
               <p className="text-slate-500 text-sm">No trades yet</p>
               <p className="text-slate-600 text-xs mt-1">Log a trade to start building your equity curve.</p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={240} className="md:h-[260px]">
               <AreaChart data={equityData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
@@ -504,7 +504,7 @@ export default function Analytics() {
         <p className="text-xs text-slate-500 mb-5">Trades by setup type</p>
 
         {isLoading ? (
-          <div className="h-[240px] rounded-xl bg-slate-800/50 animate-pulse" />
+          <div className="h-[220px] md:h-[240px] rounded-xl bg-slate-800/50 animate-pulse" />
         ) : setupData.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-slate-500 text-sm">No trades yet</p>
@@ -513,7 +513,7 @@ export default function Analytics() {
             </p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={220} className="md:h-[240px]">
             <BarChart data={setupData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="rgba(148,163,184,0.05)" vertical={false} />
               <XAxis dataKey="setup" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />

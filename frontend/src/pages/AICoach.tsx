@@ -430,25 +430,7 @@ function computeInsights(trades: ApiTrade[]) {
     bestSetup && worstSetup && bestSetup.name !== worstSetup.name && bestSetup.winRate !== null && worstSetup.winRate !== null && bestSetup.winRate - worstSetup.winRate >= SETUP_GAP_MIN
       ? {
           title: `${bestSetup.name} Setups Outperform ${worstSetup.name}`,
-          detail: `${bestSetup.name} setups have a higher win rate (${bestSetup.winRate}%) than ${worstSetup.name} setups (${worstSetup.winRate}%). Weighting your trades toward ${bestSetup.name} could improve overall results.`,
-        }
-      : null,
-    avgWin !== null && avgLoss !== null && avgLoss > avgWin * 1.1
-      ? {
-          title: "Fix Your Risk-Reward Balance",
-          detail: `Your average losing trade is larger than your average winning trade (${formatMoney(-avgLoss)} vs. ${formatMoney(avgWin)}). Tightening stops or being more selective on entries could improve your risk-reward.`,
-        }
-      : null,
-    worstAsset && worstAsset.pnl < 0
-      ? {
-          title: `Consider Reducing Trades on ${worstAsset.name}`,
-          detail: `${worstAsset.name} has a consistently negative net P&L of ${formatMoney(worstAsset.pnl)} across ${worstAsset.trades} closed trade${worstAsset.trades !== 1 ? "s" : ""}. Reducing exposure here may protect your overall results.`,
-        }
-      : null,
-    overtradingDay
-      ? {
-          title: `Cap Trades on ${overtradingDay.day}s`,
-          detail: `Trade frequency spikes on ${overtradingDay.day}s with a below-average win rate — capping entries that day may protect your results.`,
+          detail: `${bestSetup.name} wins ${bestSetup.winRate}% vs ${worstSetup.winRate}% for ${worstSetup.name} — focus more on your strongest setups.`,
         }
       : null,
     directionComparison
@@ -526,7 +508,7 @@ function computeInsights(trades: ApiTrade[]) {
 const card = `
   bg-slate-900/70 backdrop-blur-xl
   rounded-2xl border border-slate-800/60
-  p-5
+  p-4 md:p-5
   transition-colors duration-200
 `;
 
@@ -686,7 +668,7 @@ function AICoach() {
       >
         <SectionHeader icon={Award} title="Weekly Performance Review" />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {isLoading
             ? [0, 1, 2, 3].map((i) => (
                 <div key={i} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/40">
@@ -898,7 +880,7 @@ function AICoach() {
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">{geminiData.next_action}</p>
             </div>
-            </div>
+          </div>
         )}
       </motion.div>
 
