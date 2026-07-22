@@ -8,7 +8,7 @@ This module only defines the table shape — no query/CRUD logic here.
 That comes in a later step (routes + session usage).
 """
 
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey
 from sqlalchemy.sql import func
 
 from database.db import Base
@@ -18,6 +18,13 @@ class Trade(Base):
     __tablename__ = "trades"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Owning user. Every trade belongs to exactly one user; trades are
+    # never shared or global. Always set server-side from the JWT-derived
+    # current_user in routes/trade_routes.py — never trusted from the
+    # request body (validate_trade_payload() doesn't accept a user_id
+    # field at all, so this can't be spoofed by the client).
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
     asset = Column(String(50), nullable=False)          # e.g. "EUR/USD", "BTC/USD"
     direction = Column(String(10), nullable=False)        # "buy" / "sell" (long/short)
