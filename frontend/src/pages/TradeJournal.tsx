@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Pencil, Trash2, Upload, AlertTriangle } from "lucide-react";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 type Trade = {
   id?: number;
@@ -46,6 +47,8 @@ const mapApiTradeToTrade = (item: any): Trade => ({
 });
 
 export default function TradeJournal() {
+  const { token } = useAuth();
+
   const [asset, setAsset] = useState("");
   const [direction, setDirection] = useState("");
   const [entry, setEntry] = useState("");
@@ -72,7 +75,9 @@ export default function TradeJournal() {
   // one place that knows how to fetch + map trades from the API.
   const fetchTrades = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/trades`);
+      const response = await axios.get(`${API_BASE_URL}/api/trades`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const apiTrades = Array.isArray(response.data?.data) ? response.data.data : [];
       setTrades(apiTrades.map(mapApiTradeToTrade));
     } catch (err) {
@@ -80,10 +85,12 @@ export default function TradeJournal() {
     }
   };
 
-  // Load trades from the backend on mount.
+  // Load trades from the backend on mount (and whenever the token changes,
+  // e.g. after login).
   useEffect(() => {
+    if (!token) return;
     fetchTrades();
-  }, []);
+  }, [token]);
 
   const handleSaveTrade = async () => {
     if (
@@ -114,6 +121,8 @@ export default function TradeJournal() {
       notes: notes,
     };
 
+    const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+
     if (editingIndex !== null) {
       const tradeId = trades[editingIndex]?.id;
       if (tradeId === undefined) {
@@ -122,7 +131,7 @@ export default function TradeJournal() {
       }
 
       try {
-        await axios.put(`${API_BASE_URL}/api/trades/${tradeId}`, payload);
+        await axios.put(`${API_BASE_URL}/api/trades/${tradeId}`, payload, authHeaders);
         await fetchTrades();
         setEditingIndex(null);
       } catch (err) {
@@ -132,7 +141,7 @@ export default function TradeJournal() {
       }
     } else {
       try {
-        await axios.post(`${API_BASE_URL}/api/trades`, payload);
+        await axios.post(`${API_BASE_URL}/api/trades`, payload, authHeaders);
         await fetchTrades();
       } catch (err) {
         console.error("Failed to save trade:", err);
@@ -181,7 +190,9 @@ export default function TradeJournal() {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/api/trades/${tradeId}`);
+      await axios.delete(`${API_BASE_URL}/api/trades/${tradeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       await fetchTrades();
       if (editingIndex === index) setEditingIndex(null);
     } catch (err) {
@@ -206,7 +217,10 @@ export default function TradeJournal() {
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/trades/import`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       setImportSummary({
@@ -237,7 +251,9 @@ export default function TradeJournal() {
     setImportSummary(null);
 
     try {
-      const response = await axios.delete(`${API_BASE_URL}/api/trades/all`);
+      const response = await axios.delete(`${API_BASE_URL}/api/trades/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const deletedCount = response.data?.deleted ?? 0;
 
       // Refreshing trades also refreshes the dashboard stats (trade

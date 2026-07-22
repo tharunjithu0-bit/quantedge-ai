@@ -65,12 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { user: loggedInUser, token: newToken } = await loginRequest(identifier, password);
       setUser(loggedInUser);
       setToken(newToken);
-
-      // "Remember Me" controls persistence beyond this tab/session:
-      // checked -> localStorage (survives closing the browser),
-      // unchecked -> sessionStorage (cleared when the tab closes).
-      // AuthProvider always reads from localStorage on mount, so when
-      // "Remember Me" is off we deliberately do NOT write there.
       if (rememberMe) {
         localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
       } else {

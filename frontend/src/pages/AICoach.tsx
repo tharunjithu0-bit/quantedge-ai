@@ -34,23 +34,14 @@ type TradesResponse =
   | { status: "error"; message: string };
 
 type ClosedTrade = ApiTrade & { pnl: number };
-
-// Adjust to wherever the Flask API is actually served from.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://quantedge-ai-1bbs.onrender.com";
 const TRADES_ENDPOINT = `${API_BASE_URL}/api/trades`;
 const ANALYZE_ENDPOINT = `${API_BASE_URL}/api/ai/analyze`;
 
-// Only these assets exist in this project. Any insight or recommendation
-// that names a specific asset is restricted to this list — if trade data
-// ever contains something else, it's silently excluded from asset-based
-// insights rather than surfaced by name.
 const SUPPORTED_ASSETS = ["EUR/USD", "XAU/USD", "BTC/USD", "AAPL"];
 
 const PLACEHOLDER = "More trading history is needed to generate this insight.";
 
-// Minimum sample sizes before a rule is allowed to fire, to avoid noisy insights.
-// Win Rate throughout this component is Wins / (Wins + Losses) — breakeven and
-// open trades are excluded from that ratio everywhere it's used.
 const GLOBAL_MIN = 3;          // decided-or-not trades needed before any insight fires at all
 const SETUP_MIN = 2;           // decided trades in a setup before it's compared (existing threshold, kept as-is, with fallback)
 const ASSET_MIN = 2;           // decided (closed) trades on an asset before it's compared (no fallback — stricter, new)
@@ -151,8 +142,6 @@ function pickExtremeSetup(stats: SetupStat[], direction: "best" | "worst", minSa
     return s.winRate! < extreme.winRate! ? s : extreme;
   }, null as SetupStat | null);
 }
-
-// Asset stats: CLOSED trades only, restricted to the project's supported assets.
 function getAssetStats(closed: ClosedTrade[]): AssetStat[] {
   const map = new Map<string, { wins: number; losses: number; trades: number; pnl: number }>();
   closed.forEach((t) => {
@@ -224,10 +213,6 @@ function compareDirections(
   return { stronger, weaker, gap };
 }
 
-// Current streak: consecutive wins or consecutive losses, walking backward
-// from the most recent CLOSED trade. Open trades never enter this list at
-// all (the caller passes `closed`), so they neither count nor break a streak.
-// A breakeven trade is a distinct decided outcome and does end the streak.
 function getCurrentStreak(closed: ClosedTrade[]): Streak {
   if (closed.length === 0) return null;
 
@@ -255,21 +240,6 @@ function getCurrentStreak(closed: ClosedTrade[]): Streak {
   return { type, count };
 }
 
-// Weekday clustering: frequency is activity-based (all trades that day),
-// but the win rate used to judge whether that day is "weaker" only counts
-// decided trades — consistent with the app-wide Win Rate definition.
-//
-// NOTE: the explicit `: OvertradingDay` return-type annotation below is the
-// fix for the build failure ("Property 'day' does not exist on type
-// 'never'"). Without it, TypeScript infers this function's return type from
-// its return statements, including `return flagged;` at the end — but since
-// `flagged` is only ever reassigned inside the `byDay.forEach(...)` callback,
-// TypeScript can't see that mutation from the outer function scope and
-// treats `flagged` as still being its pre-loop type (`null`) at the point of
-// the final `return`. That made the whole function's inferred return type
-// collapse to `null`, so every caller's `if (overtradingDay) { ... }` block
-// narrowed to `never`. Declaring the return type explicitly sidesteps the
-// inference bug entirely — the runtime logic below is completely unchanged.
 function findOvertradingDay(trades: ApiTrade[], overallWinRatePct: number | null): OvertradingDay {
   if (overallWinRatePct === null) return null;
   if (trades.length < WEEKDAY_MIN_TOTAL) return null;
@@ -307,8 +277,6 @@ function findOvertradingDay(trades: ApiTrade[], overallWinRatePct: number | null
   return flagged;
 }
 
-// ── Insight assembly ──────────────────────────────────────────────────────────
-
 function computeInsights(trades: ApiTrade[]) {
   const emptyScaffold = () => ({
     weeklyReview: {
@@ -327,14 +295,12 @@ function computeInsights(trades: ApiTrade[]) {
       { title: "More Data Needed", detail: PLACEHOLDER },
       { title: "More Data Needed", detail: PLACEHOLDER },
     ] as Recommendation[],
-    // Not enough trades yet — nothing meaningful to send to Gemini either.
     geminiInput: null as GeminiInput | null,
   });
 
   const total = trades.length;
   if (total < GLOBAL_MIN) return emptyScaffold();
 
-  // ── Base aggregates — Win Rate = Wins / (Wins + Losses), breakeven & open excluded ──
   const closed = trades.filter((t): t is ClosedTrade => t.pnl != null);
   const wins = closed.filter((t) => t.result === "win");
   const losses = closed.filter((t) => t.result === "loss");
@@ -347,13 +313,11 @@ function computeInsights(trades: ApiTrade[]) {
   const largestWin = wins.length > 0 ? Math.max(...wins.map((t) => t.pnl)) : null;
   const largestLoss = losses.length > 0 ? Math.min(...losses.map((t) => t.pnl)) : null;
 
-  // Setups — activity from all trades, win rate from decided trades only.
   const setupStats = getSetupStats(trades);
   const bestSetup = pickExtremeSetup(setupStats, "best");
   const worstSetup = pickExtremeSetup(setupStats, "worst");
   const mostUsedSetup = getMostFrequent(trades.map((t) => t.setup_type || "Unspecified"));
 
-  // Assets — closed trades only, restricted to SUPPORTED_ASSETS.
   const assetStats = getAssetStats(closed);
   const bestAsset = pickExtremeAsset(assetStats, "best");
   const worstAsset = pickExtremeAsset(assetStats, "worst");
@@ -369,7 +333,6 @@ function computeInsights(trades: ApiTrade[]) {
   // Weekday clustering
   const overtradingDay = findOvertradingDay(trades, overallWinRatePct);
 
-  // ── Pattern candidates, in priority order — first 3 that fire are used ──
   const patternCandidates: (Pattern | null)[] = [
     worstSetup
       ? {
@@ -456,7 +419,6 @@ function computeInsights(trades: ApiTrade[]) {
     patterns.push(placeholderPatterns[patterns.length]);
   }
 
-  // ── Recommendation candidates, in priority order — first 3 that fire are used ──
   const recCandidates: (Recommendation | null)[] = [
     bestAsset
       ? {
@@ -654,11 +616,6 @@ function AICoach() {
     }
   }, []);
 
-  // Auto-run the Gemini analysis once trades have loaded successfully and
-  // there's enough data — mirrors the existing sections, which also render
-  // as soon as they have what they need. Only fires once per trade-set
-  // (geminiStatus guards against re-firing on unrelated re-renders); the
-  // Retry button re-triggers it explicitly after a failure.
   useEffect(() => {
     if (status === "success" && geminiInput && geminiStatus === "idle") {
       fetchGeminiAnalysis(geminiInput);
@@ -931,7 +888,7 @@ function AICoach() {
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">{geminiData.next_action}</p>
             </div>
-          </div>
+            </div>
         )}
       </motion.div>
 

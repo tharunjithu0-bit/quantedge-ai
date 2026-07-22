@@ -1,8 +1,4 @@
 import axios from "axios";
-
-// Same base URL constant used by Dashboard.tsx, TradeJournal.tsx, etc.
-// Kept local to this file (not extracted into a shared config) so the
-// existing pages' axios calls are left completely untouched.
 const API_BASE_URL = "https://quantedge-ai-1bbs.onrender.com";
 
 export type AuthUser = {
@@ -23,10 +19,6 @@ type ApiEnvelope<T> = {
   message?: string;
 };
 
-/**
- * Registers a new account.
- * Throws an Error with a user-friendly message on failure.
- */
 export async function registerRequest(
   username: string,
   email: string,
@@ -61,12 +53,6 @@ export async function loginRequest(
   }
 }
 
-/**
- * Resolves the current user from a stored token. Used on app load to
- * silently restore a session after a refresh. Returns null (rather
- * than throwing) on any failure, since the caller just wants to know
- * "is this token still valid?".
- */
 export async function fetchCurrentUser(token: string): Promise<AuthUser | null> {
   try {
     const res = await axios.get<ApiEnvelope<AuthUser>>(
@@ -79,10 +65,6 @@ export async function fetchCurrentUser(token: string): Promise<AuthUser | null> 
   }
 }
 
-/**
- * Best-effort logout call. The frontend discards the token regardless
- * of whether this succeeds (JWTs are stateless — see auth_routes.py).
- */
 export async function logoutRequest(token: string): Promise<void> {
   try {
     await axios.post(
@@ -91,7 +73,6 @@ export async function logoutRequest(token: string): Promise<void> {
       { headers: { Authorization: `Bearer ${token}` } }
     );
   } catch {
-    // Intentionally ignored — logging out client-side always succeeds.
   }
 }
 
